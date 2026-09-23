@@ -1,0 +1,17 @@
+# 编译产物
+*.o
+*.a
+*.d
+*.elf
+*.bin
+*.img
+*.asm
+target/
+build/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
