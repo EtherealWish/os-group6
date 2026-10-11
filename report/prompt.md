@@ -111,7 +111,7 @@ riscv64-unknown-elf-nm -n bin/kernel | grep -E ' (kern_entry|kern_init|bootstack
 
 ## 模块：练习 2 与核心函数分析
 
-**负责人：** [学号2-姓名2]
+**负责人：** 2412219-王炳環
 **AI 工具 / 模型：** Codex / [模型版本待补充]
 
 > **【待补充】** 本模块使用 Codex 辅助理解源码与调试命令、处理环境和启动问题，并整理报告文字，但尚未提交具体的提示词原文与迭代记录。
@@ -139,7 +139,7 @@ riscv64-unknown-elf-nm -n bin/kernel | grep -E ' (kern_entry|kern_init|bootstack
 
 ## 模块：第六章「对操作系统的理解」
 
-**负责人：** [学号3-姓名3]
+**负责人：** 2411870-董朝阳
 **AI 工具 / 模型：** Claude Code（终端 Agent） / Claude Opus 5
 
 ### 第 1 次迭代
