@@ -112,7 +112,7 @@ riscv64-unknown-elf-nm -n bin/kernel | grep -E ' (kern_entry|kern_init|bootstack
 ## 模块：练习 2 与核心函数分析
 
 **负责人：** 2412219-王炳環
-**AI 工具 / 模型：** Codex / [模型版本待补充]
+**AI 工具 / 模型：** Codex / gpt-6 sol
 
 > **【待补充】** 本模块使用 Codex 辅助理解源码与调试命令、处理环境和启动问题，并整理报告文字，但尚未提交具体的提示词原文与迭代记录。
 > 课程要求 `prompt.md` 汇总本实验**所有**的 prompt，请负责人补充以下内容：
