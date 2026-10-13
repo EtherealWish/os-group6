@@ -15,3 +15,7 @@ build/
 *.swp
 .DS_Store
 Thumbs.db
+
+# ucore 构建产物
+bin/
+obj/
