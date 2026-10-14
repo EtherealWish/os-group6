@@ -21,6 +21,7 @@ labX/
 | 分支 | 实验内容 | 状态 |
 |------|----------|------|
 | lab1 | 比麻雀更小的麻雀（最小可执行内核）：启动流程分析、练习 1 程序入口、练习 2 GDB 验证启动流程 | 已完成 |
+| lab2 | 物理内存和页表：物理内存初始化（`page_init`）、First-Fit / Best-Fit / Buddy System 分配器 | 进行中（功能模块一已完成） |
 
 ## 小组成员
 
@@ -36,4 +37,6 @@ labX/
 
 - WSL2 · Ubuntu 24.04 LTS
 - 交叉编译器：`riscv64-unknown-elf-gcc` 10.2.0（SiFive freedom-tools v2020.12）
-- 模拟器：`qemu-system-riscv64` 8.2.2（内置 OpenSBI v1.3）
+- 模拟器：`qemu-system-riscv64` 8.2.2（内置 OpenSBI v1.3）；lab2 起另装 QEMU 4.1.1（`/opt/qemu-4.1.1`），原因见 lab2 报告 2.2 节
+
+> **lab2 起请使用 QEMU 4.1.1。** 新版 QEMU 下，内核在 `entry.S` 开启分页后会立即取指缺页并卡死，没有任何输出。运行方式：`make qemu QEMU=/opt/qemu-4.1.1/bin/qemu-system-riscv64`（`make grade` 同理）。
