@@ -1,5 +1,7 @@
 #include <default_pmm.h>
 #include <best_fit_pmm.h>
+#include <buddy_pmm.h>
+#include <slub.h>
 #include <defs.h>
 #include <error.h>
 #include <memlayout.h>
@@ -33,8 +35,13 @@ const struct pmm_manager *pmm_manager;
 static void check_alloc_page(void);
 
 // init_pmm_manager - initialize a pmm_manager instance
+// Default to Best-Fit; override with DEFS to test another manager.
+#ifndef PMM_MANAGER
+#define PMM_MANAGER best_fit_pmm_manager
+#endif
+
 static void init_pmm_manager(void) {
-    pmm_manager = &best_fit_pmm_manager;
+    pmm_manager = &PMM_MANAGER;
     cprintf("memory management: %s\n", pmm_manager->name);
     pmm_manager->init();
 }
@@ -130,6 +137,9 @@ void pmm_init(void) {
 
     // use pmm->check to verify the correctness of the alloc/free function in a pmm
     check_alloc_page();
+
+    // Object allocation starts after the page manager and its checks are ready.
+    slub_init();
 
     extern char boot_page_table_sv39[];
     satp_virtual = (pte_t*)boot_page_table_sv39;
