@@ -21,7 +21,7 @@ labX/
 | 分支 | 实验内容 | 状态 |
 |------|----------|------|
 | lab1 | 比麻雀更小的麻雀（最小可执行内核）：启动流程分析、练习 1 程序入口、练习 2 GDB 验证启动流程 | 已完成 |
-| lab2 | 物理内存和页表：物理内存初始化（`page_init`）、First-Fit / Best-Fit / Buddy System 分配器 | 进行中（功能模块一已完成） |
+| lab2 | 物理内存和页表：物理内存初始化（`page_init`）、First-Fit / Best-Fit / Buddy System 分配器、SLUB 对象分配、GDB 调试页表查询 | 已完成 |
 
 ## 小组成员
 
