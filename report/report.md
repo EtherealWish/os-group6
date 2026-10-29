@@ -285,7 +285,7 @@ extern char end[];                                     // 链接脚本定义：�
 
 [GUARANTEE]
 必须实现的接口：
-```c
+​```c
 static void page_init(void);   // 由 pmm_init() 在 init_pmm_manager() 之后调用
 ```
 你可以根据需要添加：
@@ -315,6 +315,7 @@ static void page_init(void);   // 由 pmm_init() 在 init_pmm_manager() 之后�
   - 描述符数组的末端超出可管理的物理内存末端：调用 `panic()`，不得越界写入描述符。
 
   **Case 4（没有剩余完整页）**：
+  
   - 描述符数组之后按页对齐的起点不小于按页对齐的末端：不调用 `init_memmap()`，但其余初始化照常完成。
 
 **Requirements**:
@@ -343,7 +344,7 @@ static void page_init(void);   // 由 pmm_init() 在 init_pmm_manager() 之后�
 
   ```text
   kern/mm/best_fit_pmm.c:95:34: error: 'nr_free' undeclared (first use in this function)
-  ```
+```
 
   原因：框架的 `best_fit_pmm.c` 只提供了 `basic_check()` 和 `best_fit_check()` 两个测试函数，它们引用的 `free_list`、`nr_free` 以及 `best_fit_pmm_manager` 都要由功能模块二来定义。也就是说，**在模块二完成之前，lab2 无法完整编译**，这不是本模块代码的问题。
 
@@ -581,8 +582,6 @@ First-Fit 最坏需要扫描 k 个空闲块，查找复杂度为 O(k)。它实�
 
 本任务为分析题，不生成代码，使用以下提示词辅助阅读 `default_pmm.c`：
 
-> 说明：以下提示词为负责人根据实际任务与对话整理的复现版本，并非原始对话的逐字记录。
-
 ````markdown
 请结合 default_pmm.c、memlayout.h、pmm.h 和 list.h，分析 First-Fit
 连续物理页分配算法。说明 Page 描述符、property、free_list 和
@@ -618,7 +617,7 @@ const struct pmm_manager best_fit_pmm_manager;
 
 #### 接口规格（spec）
 
-以下规格依据指导书、框架测试和最终实现整理，是对需求与实现约束的明确描述。
+以下规格依据指导书、框架测试和最终实现整理。
 
 | 项目 | 规格 |
 |------|------|
@@ -683,8 +682,6 @@ pmm_manager = &best_fit_pmm_manager;
 #### 最终提示词
 
 以下是最终用于实现本任务的提示词，按四段式框架编写：
-
-> 说明：以下提示词为负责人根据实际任务与对话整理的复现版本，并非原始对话的逐字记录。
 
 ````markdown
 [PROMPT]
@@ -1323,7 +1320,7 @@ SLUB 应当建立在现有页级分配器之上，通过公共分配接口获取
 
 优先提供以下接口，具体名称如与工程冲突，可在说明后合理调整：
 
-```c
+​```c
 void slub_init(void);
 void *slub_alloc(size_t size);
 void slub_free(void *ptr);
@@ -1492,7 +1489,7 @@ SLUB 必须在页级物理内存初始化完成后才能开始使用。
 
 以下为本模块实际使用的第二份四段式提示词，用于生成、接入并运行 SLUB 专项测试。
 
-````markdown
+​````markdown
 [PROMPT]
 
 当前操作系统 Lab2 工程已经完成简化 SLUB 对象分配器的主体实现及内核初始化接入，但目前只完成编译检查，尚未验证对象分配、释放和页面回收的实际运行行为。
@@ -1533,7 +1530,7 @@ SLUB 必须在页级物理内存初始化完成后才能开始使用。
 
 现有 SLUB 公开接口：
 
-```c
+​```c
 void slub_init(void);
 void *slub_alloc(size_t size);
 void slub_free(void *ptr);
@@ -2030,7 +2027,7 @@ SLUB 测试已接入内核初始化后的检查流程，测试源文件能够使
 
 QEMU 命令：
 
-```bash
+​```bash
 timeout --signal=TERM --kill-after=3s 30s \
   /usr/local/bin/qemu-system-riscv64 \
   -machine virt -nographic -bios default \
