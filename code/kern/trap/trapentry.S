@@ -107,10 +107,14 @@
 __alltraps:
     SAVE_ALL
 
-    #lab3 function1 2412219
+    # lab3 function1 2411292
+    # sp points to this trapframe; tf->gpr.sp holds the pre-save sp.
+    # RV64: 36 * 8 = 288 bytes preserves the kernel stack's 16-byte alignment.
+    # The original a0 and ra are already saved in the frame.
     mv a0, sp
     jal trap
-    # sp should be the same as before "jal trap"
+    # trap() returns with the same sp and falls through to __trapret.
+    # Restore from this frame, including any C handler updates to tf->epc.
 
     .globl __trapret
 __trapret:
