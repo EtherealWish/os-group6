@@ -101,6 +101,7 @@ void interrupt_handler(struct trapframe *tf) {
         break;
     case IRQ_S_TIMER:
         clock_set_next_event();
+        /* Re-arm before accounting so timer interrupts continue after sret. */
         ticks++;
         if (ticks % TICK_NUM == 0) {
             print_ticks();
@@ -132,12 +133,14 @@ void exception_handler(struct trapframe *tf) {
     switch (tf->cause) {
     case CAUSE_ILLEGAL_INSTRUCTION:
         cprintf("Illegal instruction at 0x%016lx\n", (unsigned long)tf->epc);
-        /* Lab policy: skip the faulting 16- or 32-bit instruction. */
+        /* In RV64C, low bits 11 denote a 32-bit instruction; otherwise 16-bit.
+         * Read only the first halfword, including at a 2-byte-aligned EPC. */
         tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
         break;
     case CAUSE_BREAKPOINT:
         cprintf("Breakpoint at 0x%016lx\n", (unsigned long)tf->epc);
-        /* Both c.ebreak (2 bytes) and ebreak (4 bytes) are supported. */
+        /* c.ebreak is 0x9002 (2 bytes); ebreak is 0x00100073 (4 bytes).
+         * Advance the saved EPC, which RESTORE_ALL writes back to sepc. */
         tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
         break;
     default:

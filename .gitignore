@@ -19,3 +19,10 @@ Thumbs.db
 # ucore 构建产物
 bin/
 obj/
+# Python 缓存与临时评分输出
+__pycache__/
+*.pyc
+code/.qemu*.out
+code/.gdb.in
+code/cscope*
+code/tags
