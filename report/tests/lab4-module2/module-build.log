@@ -1,0 +1,106 @@
++ command -v riscv64-unknown-elf-gcc qemu-system-riscv64 riscv64-unknown-elf-gdb
+/opt/riscv/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin/riscv64-unknown-elf-gcc
+/opt/qemu-4.1.1/bin/qemu-system-riscv64
+/opt/riscv/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin/riscv64-unknown-elf-gdb
++ riscv64-unknown-elf-gcc --version
+riscv64-unknown-elf-gcc (SiFive GCC-Metal 10.2.0-2020.12.8) 10.2.0
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
++ qemu-system-riscv64 --version
+QEMU emulator version 4.1.1
+Copyright (c) 2003-2019 Fabrice Bellard and the QEMU Project developers
++ /usr/bin/qemu-system-riscv64 --version
+QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
+Copyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers
++ riscv64-unknown-elf-gdb --version
+GNU gdb (SiFive GDB-Metal 10.1.0-2020.12.7) 10.1
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
++ make --version
+GNU Make 4.3
+Built for x86_64-pc-linux-gnu
+Copyright (C) 1988-2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
++ make -j4
++ cc kern/init/entry.S
++ cc kern/init/init.c
++ cc kern/libs/readline.c
++ cc kern/libs/stdio.c
++ cc kern/debug/kdebug.c
++ cc kern/debug/kmonitor.c
++ cc kern/debug/panic.c
++ cc kern/driver/clock.c
++ cc kern/driver/console.c
++ cc kern/driver/dtb.c
++ cc kern/driver/intr.c
++ cc kern/driver/picirq.c
++ cc kern/trap/trap.c
++ cc kern/trap/trapentry.S
++ cc kern/mm/default_pmm.c
++ cc kern/mm/kmalloc.c
++ cc kern/mm/pmm.c
+kern/mm/default_pmm.c:3:10: fatal error: best_fit_pmm.h: No such file or directory
+    3 | #include <best_fit_pmm.h>
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Makefile:120: obj/kern/mm/default_pmm.o] Error 1
+make: *** Waiting for unfinished jobs....
+kern/trap/trap.c: In function 'trap':
+kern/trap/trap.c:102:9: warning: implicit declaration of function 'interrupt_handler' [-Wimplicit-function-declaration]
+  102 |         interrupt_handler(tf);
+      |         ^~~~~~~~~~~~~~~~~
+kern/trap/trap.c:107:9: warning: implicit declaration of function 'exception_handler' [-Wimplicit-function-declaration]
+  107 |         exception_handler(tf);
+      |         ^~~~~~~~~~~~~~~~~
+kern/mm/kmalloc.c: In function '__slob_free_pages':
+kern/mm/kmalloc.c:92:22: warning: passing argument 1 of 'kva2page' makes pointer from integer without a cast [-Wint-conversion]
+   92 |  free_pages(kva2page(kva), 1 << order);
+      |                      ^~~
+      |                      |
+      |                      long unsigned int
+In file included from kern/mm/kmalloc.c:7:
+kern/mm/pmm.h:117:16: note: expected 'void *' but argument is of type 'long unsigned int'
+  117 | kva2page(void *kva)
+      |          ~~~~~~^~~
+kern/mm/pmm.c: In function 'pmm_init':
+kern/mm/pmm.c:149:5: warning: implicit declaration of function 'page_init'; did you mean 'page_insert'? [-Wimplicit-function-declaration]
+  149 |     page_init();
+      |     ^~~~~~~~~
+      |     page_insert
++ build_rc=2
++ echo make_exit=2
+make_exit=2
++ make obj/kern/process/proc.o
++ cc kern/process/proc.c
++ echo module_object_exit=0
+module_object_exit=0
++ make grade GRADE_TMP=/mnt/d/os-lab/tmp/lab4-0543e09d/isolated-grade
+lab4 injection complete
+kern/trap/trap.c: In function 'trap':
+kern/trap/trap.c:102:9: warning: implicit declaration of function 'interrupt_handler' [-Wimplicit-function-declaration]
+  102 |         interrupt_handler(tf);
+      |         ^~~~~~~~~~~~~~~~~
+kern/trap/trap.c:107:9: warning: implicit declaration of function 'exception_handler' [-Wimplicit-function-declaration]
+  107 |         exception_handler(tf);
+      |         ^~~~~~~~~~~~~~~~~
+kern/mm/default_pmm.c:3:10: fatal error: best_fit_pmm.h: No such file or directory
+    3 | #include <best_fit_pmm.h>
+      |          ^~~~~~~~~~~~~~~~
+compilation terminated.
+gmake[1]: *** [Makefile:122: obj/kern/mm/default_pmm.o] Error 1
+gmake[1]: Entering directory '/mnt/d/os-lab/tmp/lab4-0543e09d/isolated-grade' + cc kern/init/entry.S + cc kern/init/init.c + cc kern/libs/readline.c + cc kern/libs/stdio.c + cc kern/debug/kdebug.c + cc kern/debug/kmonitor.c + cc kern/debug/panic.c + cc kern/driver/clock.c + cc kern/driver/console.c + cc kern/driver/dtb.c + cc kern/driver/intr.c + cc kern/driver/picirq.c + cc kern/trap/trap.c + cc kern/trap/trapentry.S + cc kern/mm/default_pmm.c gmake[1]: Leaving directory '/mnt/d/os-lab/tmp/lab4-0543e09d/isolated-grade'
+grep: obj/kernel.sym: No such file or directory
+  -check PMM:                                no $qemu_out
+  -check Process Create:                     no $qemu_out
+  -check Schedule:                           no $qemu_out
+Total Score: 0/30
+make: *** [Makefile:213: grade] Error 1
++ echo make_grade_exit=2
+make_grade_exit=2
++ exit 2

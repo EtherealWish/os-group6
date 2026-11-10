@@ -1,0 +1,8 @@
+  -check PMM:                                OK
+  -check Process Create:                     OK
+  -check Schedule:                           OK
+Total Score: 30/30
++ rc=0
++ echo grade_sh_exit=0
+grade_sh_exit=0
++ exit 0

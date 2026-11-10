@@ -24,6 +24,7 @@ labX/
 | lab1 | 比麻雀更小的麻雀（最小可执行内核）：启动流程分析、练习 1 程序入口、练习 2 GDB 验证启动流程 | 已完成 |
 | lab2 | 物理内存和页表：物理内存初始化（`page_init`）、First-Fit / Best-Fit / Buddy System 分配器、SLUB 对象分配、GDB 调试页表查询 | 已完成 |
 | lab3 | Trap 入口与上下文恢复、中断与异常处理 | 模块二已验证；现有评分 100/100 |
+| lab4 | 进程管理 | 模块二已实现，正式依赖待联调 |
 
 ## 小组成员
 
@@ -43,7 +44,15 @@ labX/
 
 > **lab2 起请使用 QEMU 4.1.1。** 新版 QEMU 下，内核在 `entry.S` 开启分页后会立即取指缺页并卡死，没有任何输出。运行方式：`make qemu QEMU=/opt/qemu-4.1.1/bin/qemu-system-riscv64`。`make grade` 的评分脚本直接调用 `qemu-system-riscv64`，需将 QEMU 4.1.1 的目录放到 PATH 最前。
 
-## 实验三文件与测试
+## 实验四文件与测试
+
+- `code/kern/process/proc.c` 实现功能模块二“进程创建及初始化”。
+- [Lab4 模块二报告](report/lab4-module2.md)记录接口、实现和测试结果。
+- [Lab4 测试日志](report/tests/lab4-module2/)保存构建、评分、串口和 GDB 输出。
+
+模块源码已单独编译。使用临时前置依赖在 QEMU 4.1.1 中得到课程评分 30/30，正式集成仍需接入 Lab2/3 实现及 Lab4 模块一、三。
+
+## lab3 分支文件与测试
 
 - `code/kern/trap/`：Trap 入口、寄存器恢复及中断与异常处理。
 - `code/tools/grade.sh`、`inject.py`、`test_lab3*`：原有评分测试。

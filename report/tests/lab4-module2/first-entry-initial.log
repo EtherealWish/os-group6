@@ -1,0 +1,10 @@
++ timeout 20s riscv64-unknown-elf-gdb -nx -batch -x /mnt/d/os-lab/tmp/lab4-0543e09d/first-entry.gdb bin/kernel
+bin/kernel: No such file or directory.
+bin/ucore.img: No such file or directory
+qemu-system-riscv64: -device loader,file=bin/ucore.img,addr=0x80200000: Cannot load specified image bin/ucore.img
+/mnt/d/os-lab/tmp/lab4-0543e09d/first-entry.gdb:3: Error in sourced command file:
+Remote communication error.  Target disconnected.: Connection reset by peer.
++ rc=1
++ echo gdb_exit=1
+gdb_exit=1
++ exit 1

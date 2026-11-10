@@ -1,0 +1,17 @@
++ make -j4
+make: Nothing to be done for 'TARGETS'.
++ timeout 20s riscv64-unknown-elf-gdb -nx -batch -x /mnt/d/os-lab/tmp/lab4-0543e09d/first-entry.gdb bin/kernel
+0x0000000000001000 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffffc0203118: file kern/process/entry.S, line 4.
+
+Breakpoint 1, kernel_thread_entry () at kern/process/entry.S:4
+4		move a0, s1
+pc=0xffffffffc0203118 sp=0xffffffffc0412000 s0=0xffffffffc0203174 s1=0xffffffffc02053c0
+current=0xffffffffc040e110 initproc=0xffffffffc040e110 parent=0xffffffffc040e010 idleproc=0xffffffffc040e010
+0xffffffffc02053c0:	"Hello world!!"
+GDB_ASSERTIONS_PASS
+[Inferior 1 (process 1) detached]
++ rc=0
++ echo gdb_exit=0
+gdb_exit=0
++ exit 0

@@ -1,0 +1,20 @@
+2026-11-10 (Asia/Shanghai)
+$ git status --short --branch
+## lab3...origin/lab3
+ M report/prompt.md
+?? lab4/
+?? output/
+?? tmp/
+$ git remote -v
+origin	https://github.com/EtherealWish/os-group6.git (fetch)
+origin	https://github.com/EtherealWish/os-group6.git (push)
+$ wsl -- git ls-remote --symref https://github.com/EtherealWish/os-group6.git HEAD refs/heads/*
+ref: refs/heads/main	HEAD
+ebc564e74fd5661ae13307a88db38696447f7849	HEAD
+a6d88381b8e03092082a1069f5c2e2b601f14350	refs/heads/lab1
+7218487f26da04eb0c5e7769d06190aeb2c4f385	refs/heads/lab2
+f9dc83b893138c598e513fed7215a3dc06b3e08a	refs/heads/lab3
+ebc564e74fd5661ae13307a88db38696447f7849	refs/heads/main
+ls_remote_exit=0
+$ Get-FileHash tmp/lab4-0543e09d/lab4.zip
+7A92F243F88CA9A4EC78B52E554A14D78A41BBF6A79A1275F6CC929AAEBCEBA2

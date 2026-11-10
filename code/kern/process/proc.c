@@ -86,7 +86,7 @@ char *
 set_proc_name(struct proc_struct *proc, const char *name)
 {
     memset(proc->name, 0, sizeof(proc->name));
-    return memcpy(proc->name, name, PROC_NAME_LEN);
+    return memcpy(proc->name, name, strnlen(name, PROC_NAME_LEN));
 }
 
 // get_proc_name - get the name of proc
@@ -218,7 +218,138 @@ init_main(void *arg)
     return 0;
 }
 
-//LAB4 function2 YOUR CODE
+//LAB4 function2 2411870
+static struct proc_struct *
+alloc_proc(void)
+{
+    struct proc_struct *proc = kmalloc(sizeof(struct proc_struct));
+    if (proc != NULL)
+    {
+        // 新 PCB 在资源就绪前不可调度，PID 在登记时分配。
+        memset(proc, 0, sizeof(*proc));
+        proc->state = PROC_UNINIT;
+        proc->pid = -1;
+        proc->pgdir = boot_pgdir_pa;
+        list_init(&proc->list_link);
+        list_init(&proc->hash_link);
+    }
+    return proc;
+}
+
+static int
+copy_mm(uint32_t clone_flags, struct proc_struct *proc)
+{
+    // Lab4 仅创建内核线程。用户地址空间的共享与复制留给后续实验。
+    assert(current->mm == NULL);
+    return 0;
+}
+
+static void
+copy_thread(struct proc_struct *proc, uintptr_t esp, struct trapframe *tf)
+{
+    uintptr_t stack_top = proc->kstack + KSTACKSIZE;
+    proc->tf = (struct trapframe *)stack_top - 1;
+    *proc->tf = *tf;
+    proc->tf->gpr.a0 = 0;
+    proc->tf->gpr.sp = esp == 0 ? stack_top : esp;
+
+    // 首次切换进入 forkret，由 forkrets 使用新栈上的帧执行 Trap 返回。
+    proc->context.ra = (uintptr_t)forkret;
+    proc->context.sp = (uintptr_t)proc->tf;
+}
+
+int
+do_fork(uint32_t clone_flags, uintptr_t stack, struct trapframe *tf)
+{
+    struct proc_struct *proc;
+    bool intr_flag;
+    int ret = -E_NO_FREE_PROC;
+
+    // 本实验是单核，关中断使容量检查与进程登记处于同一临界区。
+    local_intr_save(intr_flag);
+    if (nr_process >= MAX_PROCESS)
+    {
+        goto out;
+    }
+
+    ret = -E_NO_MEM;
+    if ((proc = alloc_proc()) == NULL)
+    {
+        goto out;
+    }
+    proc->parent = current;
+    if ((ret = setup_kstack(proc)) != 0)
+    {
+        goto free_proc;
+    }
+    if ((ret = copy_mm(clone_flags, proc)) != 0)
+    {
+        goto free_stack;
+    }
+    copy_thread(proc, stack, tf);
+
+    // 完成资源初始化后才发布到查找表和调度队列，最后置为就绪。
+    proc->pid = get_pid();
+    hash_proc(proc);
+    list_add(&proc_list, &proc->list_link);
+    nr_process++;
+    wakeup_proc(proc);
+    ret = proc->pid;
+    goto out;
+
+free_stack:
+    put_kstack(proc);
+free_proc:
+    kfree(proc);
+out:
+    local_intr_restore(intr_flag);
+    return ret;
+}
+
+int
+kernel_thread(int (*fn)(void *), void *arg, uint32_t clone_flags)
+{
+    struct trapframe tf;
+    memset(&tf, 0, sizeof(tf));
+    // kernel_thread_entry 从 s0 取函数入口，从 s1 取参数。
+    tf.gpr.s0 = (uintptr_t)fn;
+    tf.gpr.s1 = (uintptr_t)arg;
+    tf.status = (read_csr(sstatus) | SSTATUS_SPP | SSTATUS_SPIE) & ~SSTATUS_SIE;
+    tf.epc = (uintptr_t)kernel_thread_entry;
+    return do_fork(clone_flags | CLONE_VM, 0, &tf);
+}
+
+void
+proc_init(void)
+{
+    list_init(&proc_list);
+    for (int i = 0; i < HASH_LIST_SIZE; i++)
+    {
+        list_init(&hash_list[i]);
+    }
+
+    if ((idleproc = alloc_proc()) == NULL)
+    {
+        panic("cannot allocate idleproc.\n");
+    }
+    // idle 沿用启动栈，作为调度器的保底线程，不进入普通进程队列。
+    idleproc->pid = 0;
+    idleproc->state = PROC_RUNNABLE;
+    idleproc->kstack = (uintptr_t)bootstack;
+    idleproc->need_resched = 1;
+    set_proc_name(idleproc, "idle");
+    nr_process++;
+    current = idleproc;
+
+    int pid = kernel_thread(init_main, "Hello world!!", 0);
+    if (pid < 0)
+    {
+        panic("cannot create initproc: %e.\n", pid);
+    }
+    initproc = find_proc(pid);
+    assert(initproc != NULL);
+    set_proc_name(initproc, "init");
+}
 
 
 //LAB4 function3 YOUR CODE
