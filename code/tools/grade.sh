@@ -150,10 +150,11 @@ run_qemu() {
         brkaddr=`$grep " $brkfun\$" $sym_table | $sed -e's/ .*$//g'`
         brkaddr_phys=`echo $brkaddr | sed "s/^c0/00/g"`
         (
+            echo "file bin/kernel"
             echo "target remote localhost:$gdbport"
-            echo "break *0x$brkaddr"
+            echo "hbreak *0x$brkaddr"
             if [ "$brkaddr" != "$brkaddr_phys" ]; then
-                echo "break *0x$brkaddr_phys"
+                echo "hbreak *0x$brkaddr_phys"
             fi
             echo "continue"
         ) > $gdb_in
