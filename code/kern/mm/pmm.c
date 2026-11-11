@@ -87,7 +87,59 @@ size_t nr_free_pages(void)
     return ret;
 }
 
-//lab2 请补充你在lab2中的代码
+//lab2 function1 2411870
+/* page_init - detect physical memory from DTB, build the Page array right
+ * after the kernel image, and hand the remaining whole pages to pmm_manager */
+static void page_init(void) {
+    extern char end[];
+
+    uint64_t mem_begin = get_memory_base();
+    uint64_t mem_size = get_memory_size();
+    uint64_t mem_end = mem_begin + mem_size;
+    if (mem_begin == 0 || mem_size == 0 || mem_end < mem_begin) {
+        panic("page_init: invalid memory info from DTB (base 0x%016lx, size 0x%016lx)",
+              mem_begin, mem_size);
+    }
+
+    va_pa_offset = PHYSICAL_MEMORY_OFFSET;
+
+    cprintf("physical memory map:\n");
+    cprintf("  memory: 0x%016lx, [0x%016lx, 0x%016lx].\n", mem_size, mem_begin,
+            mem_end - 1);
+
+    // the kernel can only manage physical memory below KERNTOP's physical address
+    uint64_t maxpa = mem_end;
+    if (maxpa > KERNTOP - va_pa_offset) {
+        maxpa = KERNTOP - va_pa_offset;
+    }
+    if (maxpa <= DRAM_BASE) {
+        panic("page_init: no manageable memory above DRAM_BASE");
+    }
+
+    npage = maxpa / PGSIZE;
+    pages = (struct Page *)ROUNDUP((uintptr_t)end, PGSIZE);
+
+    // pages[0, npage - nbase) describes physical pages [nbase, npage)
+    uintptr_t freemem = PADDR((uintptr_t)(pages + (npage - nbase)));
+    if (freemem > maxpa) {
+        panic("page_init: not enough memory for the Page array");
+    }
+
+    // the array lies beyond BSS and is not zeroed: give every field a known
+    // value, and keep every page reserved until the free area is registered
+    for (size_t i = 0; i < npage - nbase; i++) {
+        pages[i].ref = 0;
+        pages[i].flags = 0;
+        pages[i].property = 0;
+        SetPageReserved(pages + i);
+    }
+
+    uintptr_t free_begin = ROUNDUP(freemem, PGSIZE);
+    uintptr_t free_end = ROUNDDOWN(maxpa, PGSIZE);
+    if (free_begin < free_end) {
+        init_memmap(pa2page(free_begin), (free_end - free_begin) / PGSIZE);
+    }
+}
 
 static void enable_paging(void)
 {
@@ -220,8 +272,54 @@ struct Page *get_page(pde_t *pgdir, uintptr_t la, pte_t **ptep_store)
     return NULL;
 }
 
-//LAB4 function1 YOUR CODE
+//LAB4 function1 2412219
+void page_remove(pde_t *pgdir, uintptr_t la)
+{
+    // 查找现有页表项。
+    pte_t *ptep = get_pte(pgdir, la, 0);
+    if (ptep == NULL || (*ptep & PTE_V) == 0)
+    {
+        return;
+    }
 
+    struct Page *page = pte2page(*ptep);
+
+    // 撤销映射，使对应地址的旧 TLB 缓存失效。
+    *ptep = 0;
+    tlb_invalidate(pgdir, la);
+
+    // 最后一个映射被撤销时，释放物理页。
+    if (page_ref_dec(page) == 0)
+    {
+        free_page(page);
+    }
+}
+
+int page_insert(pde_t *pgdir, struct Page *page,
+                uintptr_t la, uint32_t perm)
+{
+    // 中间级页表缺失时，允许分配页表页。
+    pte_t *ptep = get_pte(pgdir, la, 1);
+    if (ptep == NULL)
+    {
+        return -E_NO_MEM;
+    }
+
+    if ((*ptep & PTE_V) == 0)
+    {
+        page_ref_inc(page);
+    }
+    else if (pte2page(*ptep) != page)
+    {
+        page_remove(pgdir, la);
+        page_ref_inc(page);
+    }
+
+    // 同页重复映射时引用数不变，权限仍按本次参数更新。
+    *ptep = pte_create(page2ppn(page), perm);
+    tlb_invalidate(pgdir, la);
+    return 0;
+}
 
 
 

@@ -83,7 +83,68 @@ void print_regs(struct pushregs *gpr)
 
 extern struct mm_struct *check_mm_struct;
 
-//lab3 请补充你在lab3中的代码
+//lab3 function2 2412219
+void interrupt_handler(struct trapframe *tf) {
+    uintptr_t cause = tf->cause & ~((uintptr_t)1 << (sizeof(uintptr_t) * 8 - 1));
+    switch (cause) {
+    case IRQ_U_SOFT:
+        cprintf("User software interrupt\n");
+        break;
+    case IRQ_S_SOFT:
+        cprintf("Supervisor software interrupt\n");
+        break;
+    case IRQ_M_SOFT:
+        cprintf("Machine software interrupt\n");
+        break;
+    case IRQ_U_TIMER:
+        cprintf("User timer interrupt\n");
+        break;
+    case IRQ_S_TIMER:
+        clock_set_next_event();
+        /* Re-arm before accounting so timer interrupts continue after sret. */
+        ticks++;
+        if (ticks % TICK_NUM == 0) {
+            print_ticks();
+        }
+        break;
+    case IRQ_M_TIMER:
+        cprintf("Machine timer interrupt\n");
+        break;
+    case IRQ_U_EXT:
+        cprintf("User external interrupt\n");
+        break;
+    case IRQ_S_EXT:
+        cprintf("Supervisor external interrupt\n");
+        break;
+    case IRQ_M_EXT:
+        cprintf("Machine external interrupt\n");
+        break;
+    default:
+        cprintf("Unknown interrupt: cause %d\n", (int)cause);
+        print_trapframe(tf);
+        break;
+    }
+}
+
+void exception_handler(struct trapframe *tf) {
+    switch (tf->cause) {
+    case CAUSE_ILLEGAL_INSTRUCTION:
+        cprintf("Illegal instruction at 0x%016lx\n", (unsigned long)tf->epc);
+        /* In RV64C, low bits 11 denote a 32-bit instruction; otherwise 16-bit.
+         * Read only the first halfword, including at a 2-byte-aligned EPC. */
+        tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
+        break;
+    case CAUSE_BREAKPOINT:
+        cprintf("Breakpoint at 0x%016lx\n", (unsigned long)tf->epc);
+        /* c.ebreak is 0x9002 (2 bytes); ebreak is 0x00100073 (4 bytes).
+         * Advance the saved EPC, which RESTORE_ALL writes back to sepc. */
+        tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
+        break;
+    default:
+        print_trapframe(tf);
+        break;
+    }
+}
 
 
 

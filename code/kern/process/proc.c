@@ -352,4 +352,27 @@ proc_init(void)
 }
 
 
-//LAB4 function3 YOUR CODE
+//LAB4 function3 2412219
+
+void proc_run(struct proc_struct *proc)
+{
+    if (proc != current) {
+        bool intr_flag;
+        local_intr_save(intr_flag);
+        struct proc_struct *prev = current;
+        current = proc;
+        write_csr(satp, ((uintptr_t)8 << 60) | (proc->pgdir >> PGSHIFT));
+        flush_tlb();
+        switch_to(&prev->context, &proc->context);
+        local_intr_restore(intr_flag);
+    }
+}
+
+void cpu_idle(void)
+{
+    while (1) {
+        if (current->need_resched) {
+            schedule();
+        }
+    }
+}
