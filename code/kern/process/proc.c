@@ -352,7 +352,7 @@ proc_init(void)
 }
 
 
-//LAB4 function3 2412219
+//LAB4 function3 2411292
 
 void proc_run(struct proc_struct *proc)
 {
@@ -361,15 +361,20 @@ void proc_run(struct proc_struct *proc)
         local_intr_save(intr_flag);
         struct proc_struct *prev = current;
         current = proc;
-        write_csr(satp, ((uintptr_t)8 << 60) | (proc->pgdir >> PGSHIFT));
+        // pgdir 是根页表物理地址；RV64 MODE 位于 [63:60]，PPN 不含页内偏移。
+        write_csr(satp, ((uintptr_t)SATP_MODE_SV39 << 60) |
+                       (proc->pgdir >> PGSHIFT));
         flush_tlb();
         switch_to(&prev->context, &proc->context);
+        // 旧线程再次被选中才执行这里；嵌套 schedule 时由外层恢复原 SIE。
+        // 新线程首次运行则进入 forkret，由预置 Trap frame 经 sret 恢复状态。
         local_intr_restore(intr_flag);
     }
 }
 
 void cpu_idle(void)
 {
+    // 被切回 idle 后继续检查请求；没有请求时不改动进程状态。
     while (1) {
         if (current->need_resched) {
             schedule();
