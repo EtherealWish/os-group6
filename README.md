@@ -24,7 +24,7 @@ labX/
 | lab1 | 比麻雀更小的麻雀（最小可执行内核）：启动流程分析、练习 1 程序入口、练习 2 GDB 验证启动流程 | 已完成 |
 | lab2 | 物理内存和页表：物理内存初始化（`page_init`）、First-Fit / Best-Fit / Buddy System 分配器、SLUB 对象分配、GDB 调试页表查询 | 已完成 |
 | lab3 | Trap 入口与上下文恢复、中断与异常处理 | 模块二已验证；现有评分 100/100 |
-| lab4 | 进程管理 | 模块二已实现，正式依赖待联调 |
+| lab4 | 页映射维护、进程创建及初始化、进程调度 | 三模块集成，2026-11-12 复测 30/30 |
 
 ## 小组成员
 
@@ -46,28 +46,18 @@ labX/
 
 ## 实验四文件与测试
 
-- `code/kern/process/proc.c` 实现功能模块二“进程创建及初始化”。
-- [Lab4 模块二报告](report/lab4-module2.md)记录接口、实现和测试结果。
-- [Lab4 测试日志](report/tests/lab4-module2/)保存构建、评分、串口和 GDB 输出。
+- `code/` 包含三模块集成实现，当前验证基线为 `9435ded`。
+- [小组实验报告](report/report.md)整合实现、规格、测试、Challenge 和截图。
+- [小组 Prompt 汇总](report/prompt.md)按成员保存实际请求、最终规格和两轮测试提示词。
+- [本次集成日志](report/tests/lab4-integrated-20261112/)记录 2026-11-12 的编译和课程评分，结果为 30/30。
+- [模块二阶段记录](report/lab4-module2.md)保留失败路径、容量边界和首次运行的历史验证。
+- [Lab3 历史报告](report/lab3-report.md)和 [Lab3 Prompt](report/lab3-prompt.md)保留前一实验内容。
 
-模块源码已单独编译。使用临时前置依赖在 QEMU 4.1.1 中得到课程评分 30/30，正式集成仍需接入 Lab2/3 实现及 Lab4 模块一、三。
-
-## lab3 分支文件与测试
-
-- `code/kern/trap/`：Trap 入口、寄存器恢复及中断与异常处理。
-- `code/tools/grade.sh`、`inject.py`、`test_lab3*`：原有评分测试。
-- `code/tools/test_module2.py`：模块二补充回归，覆盖 16/32 位异常返回、分派与自动关机。
-- [完整实验报告](report/report.md)：含三位成员的 Prompt 附录、实现分析和测试截图。
-- `report/prompt.md`：Prompt 原文查阅备份。
-- `report/tests/`：评分、编译和 QEMU 测试记录。
-
-在 WSL 中设置工具链路径后运行（路径按实际安装位置调整）：
+构建及评分在 WSL 中执行，使用 QEMU 4.1.1。课程测试和评分沿用当前版本，线程退出仍进入框架的 panic/监控器并关机。更多验证边界见实验报告。
 
 ```sh
-export PATH=/opt/riscv/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin:/opt/qemu-4.1.1/bin:/usr/bin:/bin
-cd /mnt/d/os-lab/code
+export PATH=/opt/riscv/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin:/opt/qemu-4.1.1/bin:$PATH
+cd code
+make
 make grade
-python3 tools/test_module2.py
 ```
-
-测试在临时源码副本中注入用例。`bin/`、`obj/` 及临时调试输出不纳入版本控制；`report/tests/` 保存验收证据。

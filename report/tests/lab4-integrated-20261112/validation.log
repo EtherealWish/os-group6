@@ -1,0 +1,431 @@
++ cat /etc/os-release
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.5 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
++ riscv64-unknown-elf-gcc --version
+riscv64-unknown-elf-gcc (SiFive GCC-Metal 10.2.0-2020.12.8) 10.2.0
+Copyright (C) 2020 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
++ qemu-system-riscv64 --version
+QEMU emulator version 4.1.1
+Copyright (c) 2003-2019 Fabrice Bellard and the QEMU Project developers
++ riscv64-unknown-elf-gdb --version
+GNU gdb (SiFive GDB-Metal 10.1.0-2020.12.7) 10.1
+Copyright (C) 2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
++ make --version
+GNU Make 4.3
+Built for x86_64-pc-linux-gnu
+Copyright (C) 1988-2020 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
++ make -j4
++ cc kern/init/entry.S
++ cc kern/init/init.c
++ cc kern/libs/readline.c
++ cc kern/libs/stdio.c
++ cc kern/debug/kdebug.c
++ cc kern/debug/kmonitor.c
++ cc kern/debug/panic.c
++ cc kern/driver/clock.c
++ cc kern/driver/console.c
++ cc kern/driver/dtb.c
++ cc kern/driver/intr.c
++ cc kern/driver/picirq.c
++ cc kern/trap/trap.c
++ cc kern/trap/trapentry.S
++ cc kern/mm/default_pmm.c
++ cc kern/mm/kmalloc.c
++ cc kern/mm/pmm.c
++ cc kern/mm/vmm.c
++ cc kern/process/entry.S
++ cc kern/process/proc.c
++ cc kern/process/switch.S
++ cc kern/schedule/sched.c
++ cc libs/hash.c
++ cc libs/printfmt.c
++ cc libs/string.c
++ ld bin/kernel
+riscv64-unknown-elf-ld: removing unused section '.rodata.__warn.str1.8' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.__warn' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.is_kernel_panic' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.kbd_intr' in file 'obj/kern/driver/console.o'
+riscv64-unknown-elf-ld: removing unused section '.text.serial_intr' in file 'obj/kern/driver/console.o'
+riscv64-unknown-elf-ld: removing unused section '.text.pic_enable' in file 'obj/kern/driver/picirq.o'
+riscv64-unknown-elf-ld: removing unused section '.text.slob_init' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.slob_allocated' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.kallocated' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.ksize' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.tlb_invalidate' in file 'obj/kern/mm/pmm.o'
+riscv64-unknown-elf-ld: removing unused section '.rodata.print_vma.str1.8' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.print_vma' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.rodata.print_mm.str1.8' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.print_mm' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.mm_create' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.vma_create' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.mm_destroy' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.set_proc_name' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.get_proc_name' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.find_proc' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.sprintputch' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.snprintf' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.vsnprintf' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strncpy' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strfind' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strtol' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.memmove' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.memcmp' in file 'obj/libs/string.o'
+riscv64-unknown-elf-objcopy bin/kernel --strip-all -O binary bin/ucore.img
++ rc=0
++ echo build_exit=0
+build_exit=0
++ '[' 0 -ne 0 ']'
++ python3 tools/inject.py /mnt/d/os-lab-lab4-validation-0543e09d/report-materials-20261112/integrated-code
+lab4 injection complete
++ rc=0
++ echo inject_exit=0
+inject_exit=0
++ '[' 0 -ne 0 ']'
++ timeout 45s sh -x tools/grade.sh -v
++ verbose=false
++ [ x-v = x-v ]
++ verbose=true
++ out=/dev/stdout
++ err=/dev/stderr
++ gmake --version
++ make=gmake
++ makeopts=--quiet --no-print-directory -j
++ gmake
+kern/test/test_lab4.c: In function 'test_lab4_thread':
+kern/test/test_lab4.c:84:1: warning: no return statement in function returning non-void [-Wreturn-type]
+   84 | }
+      | ^
+riscv64-unknown-elf-ld: removing unused section '.rodata.__warn.str1.8' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.__warn' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.is_kernel_panic' in file 'obj/kern/debug/panic.o'
+riscv64-unknown-elf-ld: removing unused section '.text.kbd_intr' in file 'obj/kern/driver/console.o'
+riscv64-unknown-elf-ld: removing unused section '.text.serial_intr' in file 'obj/kern/driver/console.o'
+riscv64-unknown-elf-ld: removing unused section '.text.pic_enable' in file 'obj/kern/driver/picirq.o'
+riscv64-unknown-elf-ld: removing unused section '.text.slob_init' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.slob_allocated' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.kallocated' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.ksize' in file 'obj/kern/mm/kmalloc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.tlb_invalidate' in file 'obj/kern/mm/pmm.o'
+riscv64-unknown-elf-ld: removing unused section '.rodata.print_vma.str1.8' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.print_vma' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.rodata.print_mm.str1.8' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.print_mm' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.mm_create' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.vma_create' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.mm_destroy' in file 'obj/kern/mm/vmm.o'
+riscv64-unknown-elf-ld: removing unused section '.text.set_proc_name' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.get_proc_name' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.find_proc' in file 'obj/kern/process/proc.o'
+riscv64-unknown-elf-ld: removing unused section '.text.sprintputch' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.snprintf' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.vsnprintf' in file 'obj/libs/printfmt.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strncpy' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strfind' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.strtol' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.memmove' in file 'obj/libs/string.o'
+riscv64-unknown-elf-ld: removing unused section '.text.memcmp' in file 'obj/libs/string.o'
++ echo + cc kern/mm/pmm.c + cc kern/process/proc.c + cc kern/test/test_lab4.c + ld bin/kernel riscv64-unknown-elf-objcopy bin/kernel --strip-all -O binary bin/ucore.img
++ cc kern/mm/pmm.c + cc kern/process/proc.c + cc kern/test/test_lab4.c + ld bin/kernel riscv64-unknown-elf-objcopy bin/kernel --strip-all -O binary bin/ucore.img
++ awk=awk
++ bc=bc
++ date=date
++ grep=grep
++ rm=rm -f
++ sed=sed
++ sym_table=obj/kernel.sym
++ make_print GDB
++ gmake --quiet --no-print-directory -j print-GDB
++ echo riscv64-unknown-elf-gdb
++ gdb=riscv64-unknown-elf-gdb
++ gdbport=1234
++ make_print GRADE_GDB_IN
++ gmake --quiet --no-print-directory -j print-GRADE_GDB_IN
++ echo .gdb.in
++ gdb_in=.gdb.in
++ make_print qemu
++ gmake --quiet --no-print-directory -j print-qemu
++ echo qemu-system-riscv64
++ qemu=qemu-system-riscv64
++ make_print GRADE_QEMU_OUT
++ gmake --quiet --no-print-directory -j print-GRADE_QEMU_OUT
++ echo .qemu.out
++ qemu_out=.qemu.out
++ qemu-system-riscv64 -nographic -help
++ grep -q ^-gdb
++ qemugdb=-gdb tcp::1234
++ default_timeout=30
++ default_pts=5
++ pts=5
++ part=0
++ part_pos=0
++ total=0
++ total_pos=0
++ make_print ucoreimg
++ gmake --quiet --no-print-directory -j print-ucoreimg
++ echo bin/ucore.img
++ osimg=bin/ucore.img
++ make_print swapimg
++ gmake --quiet --no-print-directory -j print-swapimg
++ echo
++ swapimg=
++ qemuopts=-machine virt -nographic -bios default -device loader,file=bin/ucore.img,addr=0x80200000
++ brkfun=readline
++ run_qemu
++ qemuextra=
++ [ readline ]
++ qemuextra=-S -gdb tcp::1234
++ [ -z  ]
++ timeout=30
++ get_time
++ date +%s.%N
++ echo 1794483405.979629105
++ t0=1794483405.979629105
++ pid=714
++ sleep 1
++ ulimit -t 30
++ exec qemu-system-riscv64 -nographic -machine virt -nographic -bios default -device loader,file=bin/ucore.img,addr=0x80200000 -serial file:.qemu.out -monitor null -no-reboot -S -gdb tcp::1234
++ [ -n readline ]
++ grep  readline$ obj/kernel.sym
++ sed -es/ .*$//g
++ brkaddr=ffffffffc02000a6
++ echo ffffffffc02000a6
++ sed s/^c0/00/g
++ brkaddr_phys=ffffffffc02000a6
++ echo file bin/kernel
++ echo target remote localhost:1234
++ echo hbreak *0xffffffffc02000a6
++ [ ffffffffc02000a6 != ffffffffc02000a6 ]
++ echo continue
++ riscv64-unknown-elf-gdb -batch -nx -x .gdb.in
++ kill 714
++ pts=10
++ quick_check check PMM [Test PMM] PASS
++ tag=check PMM
++ shift
++ check_result check PMM check_regexps [Test PMM] PASS
++ show_check_tag check PMM
++ echo check PMM:
++ awk {printf "  -%-40s  ", $0}
+  -check PMM:                                + shift
++ [ ! -s .qemu.out ]
++ [ ! -s .qemu.out ]
++ check=check_regexps
++ shift
++ check_regexps [Test PMM] PASS
++ okay=yes
++ not=0
++ reg=0
++ error=
++ [ x[Test PMM] PASS = x! ]
++ [ x[Test PMM] PASS = x- ]
++ [ 0 -ne 0 ]
++ grep -F [Test PMM] PASS .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ yes = yes ]
++ pass
++ show_msg OK
++ echo OK
+OK
++ shift
++ [ 0 -gt 0 ]
++ expr 0 + 10
++ part=10
++ expr 0 + 10
++ part_pos=10
++ pts=10
++ quick_check check Process Create [Test Process Create] PASS
++ tag=check Process Create
++ shift
++ check_result check Process Create check_regexps [Test Process Create] PASS
++ show_check_tag check Process Create
++ echo check Process Create:
++ awk {printf "  -%-40s  ", $0}
+  -check Process Create:                     + shift
++ [ ! -s .qemu.out ]
++ [ ! -s .qemu.out ]
++ check=check_regexps
++ shift
++ check_regexps [Test Process Create] PASS
++ okay=yes
++ not=0
++ reg=0
++ error=
++ [ x[Test Process Create] PASS = x! ]
++ [ x[Test Process Create] PASS = x- ]
++ [ 0 -ne 0 ]
++ grep -F [Test Process Create] PASS .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ yes = yes ]
++ pass
++ show_msg OK
++ echo OK
+OK
++ shift
++ [ 0 -gt 0 ]
++ expr 10 + 10
++ part=20
++ expr 10 + 10
++ part_pos=20
++ pts=10
++ quick_check check Schedule [Test Schedule] PASS this initproc, pid = 1, name = "init" To U: "Hello world!!". To U: "en.., Bye, Bye. :)"
++ tag=check Schedule
++ shift
++ check_result check Schedule check_regexps [Test Schedule] PASS this initproc, pid = 1, name = "init" To U: "Hello world!!". To U: "en.., Bye, Bye. :)"
++ show_check_tag check Schedule
++ echo check Schedule:
++ awk {printf "  -%-40s  ", $0}
+  -check Schedule:                           + shift
++ [ ! -s .qemu.out ]
++ [ ! -s .qemu.out ]
++ check=check_regexps
++ shift
++ check_regexps [Test Schedule] PASS this initproc, pid = 1, name = "init" To U: "Hello world!!". To U: "en.., Bye, Bye. :)"
++ okay=yes
++ not=0
++ reg=0
++ error=
++ [ x[Test Schedule] PASS = x! ]
++ [ x[Test Schedule] PASS = x- ]
++ [ 0 -ne 0 ]
++ grep -F [Test Schedule] PASS .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ xthis initproc, pid = 1, name = "init" = x! ]
++ [ xthis initproc, pid = 1, name = "init" = x- ]
++ [ 0 -ne 0 ]
++ grep -F this initproc, pid = 1, name = "init" .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ xTo U: "Hello world!!". = x! ]
++ [ xTo U: "Hello world!!". = x- ]
++ [ 0 -ne 0 ]
++ grep -F To U: "Hello world!!". .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ xTo U: "en.., Bye, Bye. :)" = x! ]
++ [ xTo U: "en.., Bye, Bye. :)" = x- ]
++ [ 0 -ne 0 ]
++ grep -F To U: "en.., Bye, Bye. :)" .qemu.out
++ found=1
++ [ 1 -eq 0 ]
++ not=0
++ reg=0
++ [ yes = yes ]
++ pass
++ show_msg OK
++ echo OK
+OK
++ shift
++ [ 0 -gt 0 ]
++ expr 20 + 10
++ part=30
++ expr 20 + 10
++ part_pos=30
++ show_final
++ update_score
++ expr 0 + 30
++ total=30
++ expr 0 + 30
++ total_pos=30
++ part=0
++ part_pos=0
++ echo Total Score: 30/30
+Total Score: 30/30
++ [ 30 -lt 30 ]
++ rc=0
++ echo grade_exit=0
+grade_exit=0
++ '[' -f .qemu.out ']'
++ cat .qemu.out
+
+OpenSBI v0.4 (Jul  2 2019 11:53:53)
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name          : QEMU Virt Machine
+Platform HART Features : RV64ACDFIMSU
+Platform Max HARTs     : 8
+Current Hart           : 0
+Firmware Base          : 0x80000000
+Firmware Size          : 112 KB
+Runtime SBI Version    : 0.1
+
+PMP0: 0x0000000080000000-0x000000008001ffff (A)
+PMP1: 0x0000000000000000-0xffffffffffffffff (A,R,W,X)
+DTB Init
+HartID: 0
+DTB Address: 0x82200000
+Physical Memory from DTB:
+  Base: 0x0000000080000000
+  Size: 0x0000000008000000 (128 MB)
+  End:  0x0000000087ffffff
+DTB init completed
+(THU.CST) os is loading ...
+
+Special kernel symbols:
+  entry  0xc020004a (virtual)
+  etext  0xc0204324 (virtual)
+  edata  0xc020a030 (virtual)
+  end    0xc020e4ec (virtual)
+Kernel executable memory footprint: 58KB
+memory management: best_fit_pmm_manager
+physical memory map:
+  memory: 0x0000000008000000, [0x0000000080000000, 0x0000000087ffffff].
+check_alloc_page() succeeded!
+check_pgdir() succeeded!
+check_boot_pgdir() succeeded!
+use SLOB allocator
+kmalloc_init() succeeded!
+[Test PMM] PASS
+check_vma_struct() succeeded!
+check_vmm() succeeded.
+[Test Process Create] PASS
+++ setup timer interrupts
+[Test Schedule] PASS
+this initproc, pid = 1, name = "init"
+To U: "Hello world!!".
+To U: "en.., Bye, Bye. :)"
+kernel panic at kern/process/proc.c:209:
+    process exit!!.
+
+Welcome to the kernel debug monitor!!
+Type 'help' for a list of commands.
++ exit 0
