@@ -15,7 +15,7 @@
 
 课程评分由官方 `make grade` 注入三个内核检查，再逐个构建并运行 13 个用户程序。每个程序的行为检查 7 分，公共启动和注入检查 3 分，共 130 分。单个用户程序故意触发异常时按其原有输出规则评分。 [指导书报告要求](http://oslab.mobisys.top/lab2026/_book/lab5/lab5_5_lab_requirement.html) · [课程评分脚本](../code/tools/grade.sh)
 
-先读取小组 README、Lab 4 集成报告、代码以及 30/30 的集成与专项记录。主 worktree 的 `lab3` 有未提交内容，另一个 worktree 的 `lab4` 干净。Windows 上的 `git fetch origin` 连接 GitHub 443 超时，改用 `wsl -- git -C /mnt/d/os-lab fetch origin` 成功。远程有 `lab1` 至 `lab4` 和 `main`，因此在 `abcde63` 上创建本地 `lab5` 独立 worktree。DTB 内存探测、页映射更新、进程上下文构建、寄存器切换和调度扫描取自 Lab 4。Lab 5 框架使用 First-Fit 的自检和 `default_pmm_manager`，因此迁移同仓库 `lab2` 分支的 First-Fit 实现。实验新增的模块标记使用仓库 README 所列组长学号 2411870，迁移代码保留原有学号。
+Lab 5 分支以 Lab 4 集成提交 `abcde63` 为基线，使用独立 worktree。Lab 4 的代码、报告和 30/30 验证记录用于核对前序实现。DTB 内存探测、页映射更新、进程上下文构建、寄存器切换和调度扫描沿用 Lab 4 实现。物理页分配沿用 `lab2` 分支的 First-Fit 实现，以匹配 Lab 5 框架的 `default_pmm_manager` 和自检。源码中的学号标记用于对应课程提交格式。
 
 ## 二、启动到用户进程回收
 
@@ -55,7 +55,7 @@ TCG 把一段客体指令翻译为中间操作并生成宿主代码。已缓存�
 
 ## 四、规格和实际提示词
 
-[原始请求](prompt.md#用户请求)明确限定使用本届框架和 Lab 4 基线、保留官方断言、从正常入口完成四个模块、验证失败回滚，并保留真实日志。实现时将指导书中的函数列表转成第二节的输入、状态变更和可观测结果，再用官方测试及临时故障注入对照。课程规格中要求 `ecall` 完成双向特权切换，因此复用了 Lab 4 的寄存器恢复并补上用户返回的 `sscratch` 语义。exec 装载顺序依据用户提供的 ELF 缓冲区寿命确定，先构建新镜像便可在装载失败时保留原进程继续执行。
+实验规格以本届指导书和 Lab 4 基线为依据。第二节列出各模块的输入、状态变更和验证方法。U 态通过 `ecall` 进入内核，Trap 返回使用 `sret`。寄存器恢复沿用 Lab 4 的实现，并增加用户态返回所需的 `sscratch` 设置。 `exec` 在旧地址空间仍可访问时读取 ELF，完成新镜像装载后才切换页表。装载失败时保留旧地址空间。 [董朝阳的整体实验请求](prompt.md#董朝阳--整体实验请求)
 
 | 实际发现 | 修复与复验 |
 | --- | --- |
@@ -71,15 +71,15 @@ TCG 把一段客体指令翻译为中间操作并生成宿主代码。已缓存�
 
 | 组员 | 学号 | 实验分工 |
 | --- | --- | --- |
-| 董朝阳（组长） | 2411870 | 小组统筹、实验集成、课程评分与报告汇总 |
-| 张旭 | 2411292 | 用户程序加载与首次进入用户态。检查 ELF 段权限、BSS、用户页表与栈、Trap frame，并用串口和 GDB 核对首次返回用户态。 |
-| 王炳環 | 2412219 | 进程复制、等待与退出回收。检查 `fork` 返回值和父子地址空间隔离，以及 `wait` 和 `exit` 的唤醒、退出码传递与资源回收。 |
+| 董朝阳 | 2411870 | 实验集成、构建验证和课程评分记录 |
+| 张旭 | 2411292 | 用户程序加载与首次进入用户态，验证 ELF 段权限、BSS、用户页表、用户栈和 Trap frame |
+| 王炳環 | 2412219 | 进程复制、等待与退出回收，验证父子地址空间隔离及退出码传递 |
 
-张旭和王炳環提供的 Prompt 全文见 [组员 Prompt](prompt.md#组员-prompt)。小组集成和选做请求见同文件的会话记录。
+组长为董朝阳。三位成员的 Prompt 原文见 [组员 Prompt](prompt.md#组员-prompt)。
 
 ## 五、复现与结果
 
-环境为 WSL2 Ubuntu 24.04.5、SiFive RV64 GCC 10.2.0 / Binutils 2.35、GNU Make 4.3、QEMU 4.1.1、OpenSBI v0.4，QEMU virt 单核 128 MiB。仓库已有相同工具链下的 Lab 4 兼容记录。以下命令从 Lab 5 worktree 根目录在 WSL 执行。
+环境为 WSL2 Ubuntu 24.04.5、SiFive RV64 GCC 10.2.0 / Binutils 2.35、GNU Make 4.3、QEMU 4.1.1、OpenSBI v0.4，QEMU virt 单核 128 MiB。仓库已有相同工具链下的 Lab 4 兼容记录。复现脚本在 WSL 的 Lab 5 worktree 根目录运行。
 
 ```sh
 cd /mnt/d/os-lab-lab5
@@ -92,7 +92,7 @@ bash report/tests/lifecycle.sh 2>&1 | tee report/tests/lifecycle.log
 bash report/tests/cow.sh 2>&1 | tee report/tests/cow.log
 ```
 
-`dual-gdb.sh` 默认使用 `~/src/qemu-4.1.1/riscv64-softmmu/qemu-system-riscv64`，可用 `QEMU_DEBUG` 指定同版本带调试信息的构建。脚本根据本次 ELF 的反汇编计算断点地址。
+`dual-gdb.sh` 默认使用 `~/src/qemu-4.1.1/riscv64-softmmu/qemu-system-riscv64`，可用 `QEMU_DEBUG` 指定同版本带调试信息的构建。脚本通过构建产物的反汇编计算断点地址。
 
 | 项目 | 实测结果 | 证据 |
 | --- | --- | --- |
