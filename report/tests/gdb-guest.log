@@ -1,0 +1,26 @@
+0x0000000000001000 in ?? ()
+add symbol table from file "obj/__user_exit.out"
+Hardware assisted breakpoint 1 at 0x800136: file user/libs/syscall.c, line 15.
+
+Breakpoint 1, syscall (arg5=0, arg4=0, arg3=0, arg2=0, arg1=73, number=30) at user/libs/syscall.c:15
+15	    asm volatile("ecall" : "+r"(a0)
+GUEST ecall: pc=0x800136 syscall=30 arg=73 sp=0x7ffffee0
+=> 0x800136 <sys_putc+12>:	ecall
+0xffffffffc0200df0 in __alltraps () at kern/trap/trapentry.S:126
+126	    SAVE_ALL
+GUEST trap entry: pc=0xffffffffc0200df0 scause=8 sepc=0x800136
+Hardware assisted breakpoint 2 at 0xffffffffc02054fc: file kern/syscall/syscall.c, line 75.
+
+Breakpoint 2, syscall () at kern/syscall/syscall.c:75
+75	    struct trapframe *tf = current->tf;
+GUEST syscall: kernel_sp=0xffffffffc04bcec0 saved_user_sp=0x7ffffee0 EPC=0x80013a SPP=0
+Hardware assisted breakpoint 3 at 0xffffffffc0200eba: file kern/trap/trapentry.S, line 137.
+
+Breakpoint 3, __trapret () at kern/trap/trapentry.S:137
+137	    sret
+GUEST sret: pc=0xffffffffc0200eba sepc=0x80013a sscratch=0xffffffffc04bd000 a0=0
+=> 0xffffffffc0200eba <__trapret+94>:	sret
+sys_putc (c=73) at user/libs/syscall.c:18
+18	    return (int)a0;
+GUEST resumed: pc=0x80013a a0=0 sp=0x7ffffee0
+[Inferior 1 (process 1) detached]

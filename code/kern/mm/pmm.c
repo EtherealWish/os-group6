@@ -5,13 +5,14 @@
 #include <memlayout.h>
 #include <mmu.h>
 #include <pmm.h>
+#include <proc.h>
 #include <sbi.h>
+#include <dtb.h>
 #include <stdio.h>
 #include <string.h>
 #include <sync.h>
 #include <vmm.h>
 #include <riscv.h>
-#include <dtb.h>
 
 // virtual address of physical page array
 struct Page *pages;
@@ -141,11 +142,6 @@ static void page_init(void) {
     }
 }
 
-static void enable_paging(void)
-{
-    write_csr(satp, 0x8000000000000000 | (boot_pgdir_pa >> RISCV_PGSHIFT));
-}
-
 // boot_map_segment - setup&enable the paging mechanism
 // parameters
 //  la:   linear address of this memory need to map (after x86 segment map)
@@ -203,6 +199,7 @@ void pmm_init(void)
     // use pmm->check to verify the correctness of the alloc/free function in a
     // pmm
     check_alloc_page();
+
     // create boot_pgdir, an initial page directory(Page Directory Table, PDT)
     extern char boot_page_table_sv39[];
     boot_pgdir_va = (pte_t *)boot_page_table_sv39;
@@ -241,7 +238,8 @@ pte_t *get_pte(pde_t *pgdir, uintptr_t la, bool create)
         memset(KADDR(pa), 0, PGSIZE);
         *pdep1 = pte_create(page2ppn(page), PTE_U | PTE_V);
     }
-    pde_t *pdep0 = &((pte_t *)KADDR(PDE_ADDR(*pdep1)))[PDX0(la)];
+
+    pde_t *pdep0 = &((pde_t *)KADDR(PDE_ADDR(*pdep1)))[PDX0(la)];
     if (!(*pdep0 & PTE_V))
     {
         struct Page *page;
@@ -270,6 +268,132 @@ struct Page *get_page(pde_t *pgdir, uintptr_t la, pte_t **ptep_store)
         return pte2page(*ptep);
     }
     return NULL;
+}
+
+void unmap_range(pde_t *pgdir, uintptr_t start, uintptr_t end)
+{
+    assert(start % PGSIZE == 0 && end % PGSIZE == 0);
+    assert(USER_ACCESS(start, end));
+
+    do
+    {
+        pte_t *ptep = get_pte(pgdir, start, 0);
+        if (ptep == NULL)
+        {
+            start = ROUNDDOWN(start + PTSIZE, PTSIZE);
+            continue;
+        }
+        if (*ptep != 0)
+        {
+            page_remove(pgdir, start);
+        }
+        start += PGSIZE;
+    } while (start != 0 && start < end);
+}
+
+static bool
+page_table_empty(const pte_t *table)
+{
+    for (size_t i = 0; i < NPTEENTRY; i++)
+    {
+        if (table[i] & PTE_V)
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+void exit_range(pde_t *pgdir, uintptr_t start, uintptr_t end)
+{
+    assert(start % PGSIZE == 0 && end % PGSIZE == 0);
+    assert(USER_ACCESS(start, end));
+
+    for (uintptr_t addr = ROUNDDOWN(start, PDSIZE); addr < end; addr += PDSIZE)
+    {
+        pde_t *root = &pgdir[PDX1(addr)];
+        if (!(*root & PTE_V))
+        {
+            continue;
+        }
+
+        struct Page *directory = pde2page(*root);
+        pde_t *entries = page2kva(directory);
+        uintptr_t lower = start > addr ? ROUNDDOWN(start, PTSIZE) : addr;
+        uintptr_t upper = end < addr + PDSIZE ? end : addr + PDSIZE;
+        for (uintptr_t region = lower; region < upper; region += PTSIZE)
+        {
+            pde_t *entry = &entries[PDX0(region)];
+            if (*entry & PTE_V)
+            {
+                struct Page *table = pde2page(*entry);
+                if (page_table_empty(page2kva(table)))
+                {
+                    *entry = 0;
+                    free_page(table);
+                }
+            }
+        }
+        // Other VMAs can still own leaf tables under this directory.
+        if (page_table_empty(entries))
+        {
+            *root = 0;
+            free_page(directory);
+        }
+    }
+}
+
+// lab5 function3 2411870
+// Stage child mappings. The parent permissions are committed after all VMAs
+// have been copied successfully and before the child is published.
+int copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end)
+{
+    assert(start % PGSIZE == 0 && end % PGSIZE == 0);
+    assert(USER_ACCESS(start, end));
+
+    while (start < end)
+    {
+        pte_t *pte = get_pte(from, start, 0);
+        if (pte == NULL)
+        {
+            start = ROUNDDOWN(start + PTSIZE, PTSIZE);
+            continue;
+        }
+        if ((*pte & (PTE_V | PTE_U)) == (PTE_V | PTE_U))
+        {
+            uint32_t perm = *pte & (PTE_USER | PTE_COW);
+            if (perm & PTE_W)
+            {
+                perm = (perm & ~PTE_W) | PTE_COW;
+            }
+            int ret = page_insert(to, pte2page(*pte), start, perm);
+            if (ret != 0)
+            {
+                return ret;
+            }
+        }
+        start += PGSIZE;
+    }
+    return 0;
+}
+
+void cow_protect_range(pde_t *pgdir, uintptr_t start, uintptr_t end)
+{
+    while (start < end)
+    {
+        pte_t *pte = get_pte(pgdir, start, 0);
+        if (pte == NULL)
+        {
+            start = ROUNDDOWN(start + PTSIZE, PTSIZE);
+            continue;
+        }
+        if ((*pte & (PTE_V | PTE_U | PTE_W)) == (PTE_V | PTE_U | PTE_W))
+        {
+            *pte = (*pte & ~PTE_W) | PTE_COW;
+            tlb_invalidate(pgdir, start);
+        }
+        start += PGSIZE;
+    }
 }
 
 //LAB4 function1 2412219
@@ -322,17 +446,35 @@ int page_insert(pde_t *pgdir, struct Page *page,
 }
 
 
-
-
-
-
-// invalidate a TLB entry, but only if the page tables being
-// edited are the ones currently in use by the processor.
+// Invalidate this VA in the active hart’s TLB.
 void tlb_invalidate(pde_t *pgdir, uintptr_t la)
 {
-    // flush_tlb();
-    // The flush_tlb flush the entire TLB, is there any better way?
-    asm volatile("sfence.vma %0" : : "r"(la));
+    asm volatile("sfence.vma %0" : : "r"(la) : "memory");
+}
+
+// pgdir_alloc_page - call alloc_page & page_insert functions to
+//                  - allocate a page size memory & setup an addr map
+//                  - pa<->la with linear address la and the PDT pgdir
+struct Page *pgdir_alloc_page(pde_t *pgdir, uintptr_t la, uint32_t perm)
+{
+    struct Page *page = alloc_page();
+    if (page != NULL)
+    {
+        if (page_insert(pgdir, page, la, perm) != 0)
+        {
+            free_page(page);
+            return NULL;
+        }
+        // swap_map_swappable(check_mm_struct, la, page, 0);
+        page->pra_vaddr = la;
+        assert(page_ref(page) == 1);
+        // cprintf("get No. %d  page: pra_vaddr %x, pra_link.prev %x,
+        // pra_link_next %x in pgdir_alloc_page\n", (page-pages),
+        // page->pra_vaddr,page->pra_page_link.prev,
+        // page->pra_page_link.next);
+    }
+
+    return page;
 }
 
 static void check_alloc_page(void)
@@ -445,58 +587,41 @@ static void check_boot_pgdir(void)
     cprintf("check_boot_pgdir() succeeded!\n");
 }
 
-// perm2str - use string 'u,r,w,-' to present the permission
-static const char *perm2str(int perm)
+void print_pgdir(void)
 {
-    static char str[4];
-    str[0] = (perm & PTE_U) ? 'u' : '-';
-    str[1] = 'r';
-    str[2] = (perm & PTE_W) ? 'w' : '-';
-    str[3] = '\0';
-    return str;
-}
+    if (current == NULL || current->mm == NULL)
+    {
+        return;
+    }
 
-// get_pgtable_items - In [left, right] range of PDT or PT, find a continuous
-// linear addr space
-//                  - (left_store*X_SIZE~right_store*X_SIZE) for PDT or PT
-//                  - X_SIZE=PTSIZE=4M, if PDT; X_SIZE=PGSIZE=4K, if PT
-// paramemters:
-//  left:        no use ???
-//  right:       the high side of table's range
-//  start:       the low side of table's range
-//  table:       the beginning addr of table
-//  left_store:  the pointer of the high side of table's next range
-//  right_store: the pointer of the low side of table's next range
-//  return value: 0 - not a invalid item range, perm - a valid item range with
-//  perm permission
-static int get_pgtable_items(size_t left, size_t right, size_t start,
-                             uintptr_t *table, size_t *left_store,
-                             size_t *right_store)
-{
-    if (start >= right)
+    cprintf("user virtual ranges:\n");
+    pde_t *pgdir = current->mm->pgdir;
+    uintptr_t start = USERBASE;
+    while (start < USERTOP)
     {
-        return 0;
-    }
-    while (start < right && !(table[start] & PTE_V))
-    {
-        start++;
-    }
-    if (start < right)
-    {
-        if (left_store != NULL)
+        pte_t *pte = get_pte(pgdir, start, 0);
+        if (pte == NULL)
         {
-            *left_store = start;
+            start = ROUNDDOWN(start + PTSIZE, PTSIZE);
+            continue;
         }
-        int perm = (table[start++] & PTE_USER);
-        while (start < right && (table[start] & PTE_USER) == perm)
+        if (!(*pte & PTE_V))
         {
-            start++;
+            start += PGSIZE;
+            continue;
         }
-        if (right_store != NULL)
+
+        uint32_t perm = *pte & PTE_USER;
+        uintptr_t end = start;
+        do
         {
-            *right_store = start;
-        }
-        return perm;
+            end += PGSIZE;
+            pte = end < USERTOP ? get_pte(pgdir, end, 0) : NULL;
+        } while (pte != NULL && (*pte & PTE_USER) == perm);
+
+        cprintf("  %p-%p %c%c%c%c\n", (void *)start, (void *)end,
+                perm & PTE_U ? 'u' : '-', perm & PTE_R ? 'r' : '-',
+                perm & PTE_W ? 'w' : '-', perm & PTE_X ? 'x' : '-');
+        start = end;
     }
-    return 0;
 }

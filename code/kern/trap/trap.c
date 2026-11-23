@@ -1,28 +1,22 @@
-#include <assert.h>
-#include <clock.h>
-#include <console.h>
 #include <defs.h>
-#include <kdebug.h>
-#include <memlayout.h>
 #include <mmu.h>
+#include <memlayout.h>
+#include <clock.h>
+#include <trap.h>
 #include <riscv.h>
 #include <stdio.h>
-#include <trap.h>
+#include <assert.h>
+#include <console.h>
 #include <vmm.h>
+#include <kdebug.h>
+#include <unistd.h>
+#include <syscall.h>
+#include <error.h>
+#include <sched.h>
+#include <sync.h>
+#include <sbi.h>
 
-#define TICK_NUM 100
-
-static void print_ticks()
-{
-    cprintf("%d ticks\n", TICK_NUM);
-#ifdef DEBUG_GRADE
-    cprintf("End of Test.\n");
-    panic("EOT: kernel seems ok.");
-#endif
-}
-
-/* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S
- */
+/* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
 void idt_init(void)
 {
     extern void __alltraps(void);
@@ -35,13 +29,20 @@ void idt_init(void)
     set_csr(sstatus, SSTATUS_SUM);
 }
 
+/* trap_in_kernel - test if trap happened in kernel */
+bool trap_in_kernel(struct trapframe *tf)
+{
+    return (tf->status & SSTATUS_SPP) != 0;
+}
+
 void print_trapframe(struct trapframe *tf)
 {
     cprintf("trapframe at %p\n", tf);
+    // cprintf("trapframe at 0x%x\n", tf);
     print_regs(&tf->gpr);
     cprintf("  status   0x%08x\n", tf->status);
     cprintf("  epc      0x%08x\n", tf->epc);
-    cprintf("  badvaddr 0x%08x\n", tf->badvaddr);
+    cprintf("  tval 0x%08x\n", tf->tval);
     cprintf("  cause    0x%08x\n", tf->cause);
 }
 
@@ -81,9 +82,7 @@ void print_regs(struct pushregs *gpr)
     cprintf("  t6       0x%08x\n", gpr->t6);
 }
 
-extern struct mm_struct *check_mm_struct;
-
-//lab3 function2 2412219
+// lab3: timer interrupt dispatch
 void interrupt_handler(struct trapframe *tf) {
     uintptr_t cause = tf->cause & ~((uintptr_t)1 << (sizeof(uintptr_t) * 8 - 1));
     switch (cause) {
@@ -101,10 +100,9 @@ void interrupt_handler(struct trapframe *tf) {
         break;
     case IRQ_S_TIMER:
         clock_set_next_event();
-        /* Re-arm before accounting so timer interrupts continue after sret. */
         ticks++;
-        if (ticks % TICK_NUM == 0) {
-            print_ticks();
+        if (current != NULL) {
+            current->need_resched = 1;
         }
         break;
     case IRQ_M_TIMER:
@@ -126,37 +124,39 @@ void interrupt_handler(struct trapframe *tf) {
     }
 }
 
-void exception_handler(struct trapframe *tf) {
-    switch (tf->cause) {
-    case CAUSE_ILLEGAL_INSTRUCTION:
-        cprintf("Illegal instruction at 0x%016lx\n", (unsigned long)tf->epc);
-        /* In RV64C, low bits 11 denote a 32-bit instruction; otherwise 16-bit.
-         * Read only the first halfword, including at a 2-byte-aligned EPC. */
-        tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
-        break;
-    case CAUSE_BREAKPOINT:
-        cprintf("Breakpoint at 0x%016lx\n", (unsigned long)tf->epc);
-        /* c.ebreak is 0x9002 (2 bytes); ebreak is 0x00100073 (4 bytes).
-         * Advance the saved EPC, which RESTORE_ALL writes back to sepc. */
-        tf->epc += ((*(const volatile uint16_t *)tf->epc & 3) == 3) ? 4 : 2;
-        break;
-    default:
-        print_trapframe(tf);
-        break;
+// lab5 function1 2411870
+void exception_handler(struct trapframe *tf)
+{
+    if (tf->cause == CAUSE_USER_ECALL)
+    {
+        tf->epc += 4;
+        syscall();
+        return;
     }
+    if (!trap_in_kernel(tf))
+    {
+        if (tf->cause == CAUSE_STORE_PAGE_FAULT && current != NULL)
+        {
+            int ret = cow_resolve(current->mm, tf->tval);
+            if (ret == 0)
+            {
+                return; // Retry the original store with the corrected mapping.
+            }
+            if (ret == -E_NO_MEM)
+            {
+                do_exit(ret);
+            }
+        }
+        cprintf("user exception: cause %lu, epc %p, address %p\n",
+                tf->cause, (void *)tf->epc, (void *)tf->tval);
+        do_exit(-E_KILLED);
+    }
+    print_trapframe(tf);
+    panic("unexpected supervisor exception");
 }
 
-
-
-/* *
- * trap - handles or dispatches an exception/interrupt. if and when trap()
- * returns,
- * the code in kern/trap/trapentry.S restores the old CPU state saved in the
- * trapframe and then uses the iret instruction to return from the exception.
- * */
-void trap(struct trapframe *tf)
+static inline void trap_dispatch(struct trapframe *tf)
 {
-    // dispatch based on what type of trap occurred
     if ((intptr_t)tf->cause < 0)
     {
         // interrupts
@@ -166,5 +166,42 @@ void trap(struct trapframe *tf)
     {
         // exceptions
         exception_handler(tf);
+    }
+}
+
+/* *
+ * trap - handles or dispatches an exception/interrupt. if and when trap() returns,
+ * the code in kern/trap/trapentry.S restores the old CPU state saved in the
+ * trapframe and then uses the sret instruction to return from the exception.
+ * */
+void trap(struct trapframe *tf)
+{
+    // dispatch based on what type of trap occurred
+    //    cputs("some trap");
+    if (current == NULL)
+    {
+        trap_dispatch(tf);
+    }
+    else
+    {
+        struct trapframe *otf = current->tf;
+        current->tf = tf;
+
+        bool in_kernel = trap_in_kernel(tf);
+
+        trap_dispatch(tf);
+
+        current->tf = otf;
+        if (!in_kernel)
+        {
+            if (current->flags & PF_EXITING)
+            {
+                do_exit(-E_KILLED);
+            }
+            if (current->need_resched)
+            {
+                schedule();
+            }
+        }
     }
 }

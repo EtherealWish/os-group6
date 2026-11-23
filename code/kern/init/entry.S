@@ -11,7 +11,6 @@ kern_entry:
     sd a0, 0(t0)
     la t0, boot_dtb
     sd a1, 0(t0)
-    
     # t0 := 三级页表的虚拟地址
     lui     t0, %hi(boot_page_table_sv39)
     # t1 := 0xffffffff40000000 即虚实映射偏移量
@@ -61,7 +60,6 @@ boot_page_table_sv39:
     .zero 8 * 511
     # 设置最后一个页表项，PPN=0x80000，标志位 VRWXAD 均为 1
     .quad (0x80000 << 10) | 0xcf # VRWXAD
-
     .global boot_hartid
 boot_hartid:
     .quad 0

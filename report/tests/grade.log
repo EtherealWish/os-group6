@@ -1,77 +1,55 @@
-lab3 injection complete
-Building trap entry, register restore, and breakpoint EPC...
-+ cc kern/init/entry.S
-+ cc kern/init/init.c
-+ cc kern/libs/stdio.c
-+ cc kern/debug/kdebug.c
-+ cc kern/debug/kmonitor.c
-+ cc kern/debug/panic.c
-+ cc kern/driver/clock.c
-+ cc kern/driver/console.c
-+ cc kern/driver/dtb.c
-+ cc kern/driver/intr.c
-+ cc kern/trap/trap.c
-+ cc kern/trap/trapentry.S
-+ cc kern/mm/best_fit_pmm.c
-+ cc kern/mm/default_pmm.c
-+ cc kern/mm/pmm.c
-+ cc kern/test/test_lab3.c
-+ cc kern/test/test_lab3_context.S
-+ cc libs/printfmt.c
-+ cc libs/readline.c
-+ cc libs/sbi.c
-+ cc libs/string.c
-+ ld bin/kernel
-Running trap entry, register restore, and breakpoint EPC...
-  - trap entry, register restore, and breakpoint EPC: PASS (35/35)
-Building illegal instruction EPC advance and return...
-+ cc kern/init/entry.S
-+ cc kern/init/init.c
-+ cc kern/libs/stdio.c
-+ cc kern/debug/kdebug.c
-+ cc kern/debug/kmonitor.c
-+ cc kern/debug/panic.c
-+ cc kern/driver/clock.c
-+ cc kern/driver/console.c
-+ cc kern/driver/dtb.c
-+ cc kern/driver/intr.c
-+ cc kern/trap/trap.c
-+ cc kern/trap/trapentry.S
-+ cc kern/mm/best_fit_pmm.c
-+ cc kern/mm/default_pmm.c
-+ cc kern/mm/pmm.c
-+ cc kern/test/test_lab3.c
-+ cc kern/test/test_lab3_context.S
-+ cc libs/printfmt.c
-+ cc libs/readline.c
-+ cc libs/sbi.c
-+ cc libs/string.c
-+ ld bin/kernel
-Running illegal instruction EPC advance and return...
-  - illegal instruction EPC advance and return: PASS (25/25)
-Building re-armed supervisor timer and repeated trap return...
-+ cc kern/init/entry.S
-+ cc kern/init/init.c
-+ cc kern/libs/stdio.c
-+ cc kern/debug/kdebug.c
-+ cc kern/debug/kmonitor.c
-+ cc kern/debug/panic.c
-+ cc kern/driver/clock.c
-+ cc kern/driver/console.c
-+ cc kern/driver/dtb.c
-+ cc kern/driver/intr.c
-+ cc kern/trap/trap.c
-+ cc kern/trap/trapentry.S
-+ cc kern/mm/best_fit_pmm.c
-+ cc kern/mm/default_pmm.c
-+ cc kern/mm/pmm.c
-+ cc kern/test/test_lab3.c
-+ cc kern/test/test_lab3_context.S
-+ cc libs/printfmt.c
-+ cc libs/readline.c
-+ cc libs/sbi.c
-+ cc libs/string.c
-+ ld bin/kernel
-Running re-armed supervisor timer and repeated trap return...
-  - re-armed supervisor timer and repeated trap return: PASS (40/40)
-Total Score: 100/100
++ timeout 170s make grade GRADE_TMP=/tmp/tmp.ZEWjavIdxv/source SH=/tmp/tmp.ZEWjavIdxv/capture
+tar: .: time stamp 2026-11-22 21:00:01 is 1.722233176 s in the future
+lab5 injection complete
+user/testbss.c: In function 'main':
+user/testbss.c:29:13: warning: array subscript 1049600 is above array bounds of 'uint32_t[1048576]' {aka 'unsigned int[1048576]'} [-Warray-bounds]
+   29 |     bigarray[ARRAYSIZE + 1024] = 0;
+      |     ~~~~~~~~^~~~~~~~~~~~~~~~~~
+user/testbss.c:6:10: note: while referencing 'bigarray'
+    6 | uint32_t bigarray[ARRAYSIZE];
+      |          ^~~~~~~~
+gmake[1]: Entering directory '/tmp/tmp.ZEWjavIdxv/source' + cc kern/init/entry.S + cc kern/init/init.c + cc kern/libs/readline.c + cc kern/libs/stdio.c + cc kern/debug/kdebug.c + cc kern/debug/kmonitor.c + cc kern/debug/panic.c + cc kern/driver/clock.c + cc kern/driver/console.c + cc kern/driver/dtb.c + cc kern/driver/intr.c + cc kern/driver/picirq.c + cc kern/trap/trap.c + cc kern/trap/trapentry.S + cc kern/mm/default_pmm.c + cc kern/mm/kmalloc.c + cc kern/mm/pmm.c + cc kern/mm/vmm.c + cc kern/process/entry.S + cc kern/process/proc.c + cc kern/process/switch.S + cc kern/schedule/sched.c + cc kern/syscall/syscall.c + cc kern/test/test_lab5.c + cc libs/hash.c + cc libs/printfmt.c + cc libs/rand.c + cc libs/string.c + cc user/badarg.c + cc user/libs/initcode.S + cc user/libs/panic.c + cc user/libs/stdio.c + cc user/libs/syscall.c + cc user/libs/ulib.c + cc user/libs/umain.c + cc user/badsegment.c + cc user/divzero.c + cc user/exit.c + cc user/faultread.c + cc user/faultreadkernel.c + cc user/forktest.c + cc user/forktree.c + cc user/hello.c + cc user/pgdir.c + cc user/softint.c + cc user/spin.c + cc user/testbss.c + cc user/waitkill.c + cc user/yield.c + ld bin/kernel riscv64-unknown-elf-objcopy bin/kernel --strip-all -O binary bin/ucore.img gmake[1]: Leaving directory '/tmp/tmp.ZEWjavIdxv/source'
+badsegment:              (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+divzero:                 (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+softint:                 (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+faultread:               (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+faultreadkernel:         (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+hello:                   (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+testbss:                 (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+pgdir:                   (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+yield:                   (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+badarg:                  (1.1s)
+  -check result:                             OK
+  -check output:                             OK
+exit:                    (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+spin:                    (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+forktest:                (1.0s)
+  -check result:                             OK
+  -check output:                             OK
+Total Score: 130/130
++ status=0
++ printf 'grade_exit=%s\n' 0
+grade_exit=0
++ exit 0

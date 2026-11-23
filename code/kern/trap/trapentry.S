@@ -1,45 +1,58 @@
 #include <riscv.h>
 
-    .macro SAVE_ALL
+    .altmacro
     .align 2
+    .macro SAVE_ALL
+    LOCAL _restore_kernel_sp
+    LOCAL _save_context
 
-    csrw sscratch, sp
+    # If coming from userspace, preserve the user stack pointer and load
+    # the kernel stack pointer. If we came from the kernel, sscratch
+    # will contain 0, and we should continue on the current stack.
+    csrrw sp, sscratch, sp
+    bnez sp, _save_context
 
+_restore_kernel_sp:
+    csrr sp, sscratch
+_save_context:
     addi sp, sp, -36 * REGBYTES
-    # save gprs
-    STORE  x1,1*REGBYTES(sp)
-    STORE  x3,3*REGBYTES(sp)
-    STORE  x4,4*REGBYTES(sp)
-    STORE  x5,5*REGBYTES(sp)
-    STORE  x6,6*REGBYTES(sp)
-    STORE  x7,7*REGBYTES(sp)
-    STORE  x8,8*REGBYTES(sp)
-    STORE  x9,9*REGBYTES(sp)
-    STORE  x10,10*REGBYTES(sp)
-    STORE  x11,11*REGBYTES(sp)
-    STORE  x12,12*REGBYTES(sp)
-    STORE  x13,13*REGBYTES(sp)
-    STORE  x14,14*REGBYTES(sp)
-    STORE  x15,15*REGBYTES(sp)
-    STORE  x16,16*REGBYTES(sp)
-    STORE  x17,17*REGBYTES(sp)
-    STORE  x18,18*REGBYTES(sp)
-    STORE  x19,19*REGBYTES(sp)
-    STORE  x20,20*REGBYTES(sp)
-    STORE  x21,21*REGBYTES(sp)
-    STORE  x22,22*REGBYTES(sp)
-    STORE  x23,23*REGBYTES(sp)
-    STORE  x24,24*REGBYTES(sp)
-    STORE  x25,25*REGBYTES(sp)
-    STORE  x26,26*REGBYTES(sp)
-    STORE  x27,27*REGBYTES(sp)
-    STORE  x28,28*REGBYTES(sp)
-    STORE  x29,29*REGBYTES(sp)
-    STORE  x30,30*REGBYTES(sp)
-    STORE  x31,31*REGBYTES(sp)
+    # save x registers
+    STORE x0, 0*REGBYTES(sp)
+    STORE x1, 1*REGBYTES(sp)
+    STORE x3, 3*REGBYTES(sp)
+    STORE x4, 4*REGBYTES(sp)
+    STORE x5, 5*REGBYTES(sp)
+    STORE x6, 6*REGBYTES(sp)
+    STORE x7, 7*REGBYTES(sp)
+    STORE x8, 8*REGBYTES(sp)
+    STORE x9, 9*REGBYTES(sp)
+    STORE x10, 10*REGBYTES(sp)
+    STORE x11, 11*REGBYTES(sp)
+    STORE x12, 12*REGBYTES(sp)
+    STORE x13, 13*REGBYTES(sp)
+    STORE x14, 14*REGBYTES(sp)
+    STORE x15, 15*REGBYTES(sp)
+    STORE x16, 16*REGBYTES(sp)
+    STORE x17, 17*REGBYTES(sp)
+    STORE x18, 18*REGBYTES(sp)
+    STORE x19, 19*REGBYTES(sp)
+    STORE x20, 20*REGBYTES(sp)
+    STORE x21, 21*REGBYTES(sp)
+    STORE x22, 22*REGBYTES(sp)
+    STORE x23, 23*REGBYTES(sp)
+    STORE x24, 24*REGBYTES(sp)
+    STORE x25, 25*REGBYTES(sp)
+    STORE x26, 26*REGBYTES(sp)
+    STORE x27, 27*REGBYTES(sp)
+    STORE x28, 28*REGBYTES(sp)
+    STORE x29, 29*REGBYTES(sp)
+    STORE x30, 30*REGBYTES(sp)
+    STORE x31, 31*REGBYTES(sp)
 
-    # get sr, epc, badvaddr, cause
-    csrr s0, sscratch
+    # get sr, epc, tval, cause
+    # Set sscratch register to 0, so that if a recursive exception
+    # occurs, the exception vector knows it came from the kernel
+    csrrw s0, sscratch, x0
     csrr s1, sstatus
     csrr s2, sepc
     csrr s3, 0x143
@@ -54,12 +67,21 @@
 
     .macro RESTORE_ALL
 
-
     #lab3 function1 2412219
 
     # 恢复返回状态和返回地址
     LOAD s0, 32*REGBYTES(sp)
     LOAD s1, 33*REGBYTES(sp)
+    # Returning to U-mode requires a kernel stack for the next trap.
+    # Keep sscratch zero while executing supervisor code.
+    andi t0, s0, SSTATUS_SPP
+    bnez t0, 1f
+    addi t0, sp, 36 * REGBYTES
+    j 2f
+1:
+    li t0, 0
+2:
+    csrw sscratch, t0
     csrw sstatus, s0
     csrw sepc, s1
 
@@ -97,8 +119,6 @@
 
     # 最后恢复原始栈指针
     LOAD x2, 2*REGBYTES(sp)
-
-
     .endm
 
     .globl __alltraps
@@ -113,7 +133,7 @@ __alltraps:
     .globl __trapret
 __trapret:
     RESTORE_ALL
-    # go back from supervisor call
+    # return from supervisor call
     sret
  
     .globl forkrets

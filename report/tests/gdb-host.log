@@ -1,0 +1,27 @@
+Breakpoint 1 at 0x36bad0: file /home/riscv/src/qemu-4.1.1/target/riscv/translate.c, line 88.
+Breakpoint 2 at 0x374d70: file /home/riscv/src/qemu-4.1.1/target/riscv/cpu_helper.c, line 504.
+Breakpoint 3 at 0x374fff: file /home/riscv/src/qemu-4.1.1/target/riscv/cpu_helper.c, line 564.
+Breakpoint 4 at 0x36bf20: file /home/riscv/src/qemu-4.1.1/target/riscv/insn_trans/trans_privileged.inc.c, line 43.
+Breakpoint 5 at 0x373fe0: file /home/riscv/src/qemu-4.1.1/target/riscv/op_helper.c, line 75.
+Breakpoint 6 at 0x3740a6: file /home/riscv/src/qemu-4.1.1/target/riscv/op_helper.c, line 101.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+[New Thread 0x7ffff79656c0 (LWP 904)]
+[New Thread 0x7ffff50e36c0 (LWP 905)]
+[Switching to Thread 0x7ffff50e36c0 (LWP 905)]
+HOST TCG sret: pc=0xffffffffc0200eba
+#0  trans_sret (ctx=0x7ffff50e28a0, a=<optimized out>) at /home/riscv/src/qemu-4.1.1/target/riscv/insn_trans/trans_privileged.inc.c:43
+#1  0x00005555558c5186 in decode_insn32 (ctx=ctx@entry=0x7ffff50e28a0, insn=insn@entry=270532723) at target/riscv/decode_insn32.inc.c:1638
+#2  0x00005555558c713e in decode_opc (ctx=0x7ffff50e28a0) at /home/riscv/src/qemu-4.1.1/target/riscv/translate.c:746
+HOST TCG ecall: pc=0x800136 exception=8
+#0  generate_exception (ctx=0x7ffff50e28a0, excp=excp@entry=8) at /home/riscv/src/qemu-4.1.1/target/riscv/translate.c:88
+#1  0x00005555558c6e81 in trans_ecall (a=<optimized out>, ctx=0x7ffff50e28a0) at /home/riscv/src/qemu-4.1.1/target/riscv/insn_trans/trans_privileged.inc.c:24
+#2  decode_insn32 (ctx=ctx@entry=0x7ffff50e28a0, insn=insn@entry=115) at target/riscv/decode_insn32.inc.c:1614
+#3  0x00005555558c713e in decode_opc (ctx=0x7ffff50e28a0) at /home/riscv/src/qemu-4.1.1/target/riscv/translate.c:746
+HOST ecall runtime: pc=0x800136 priv=0 medeleg=0xb109
+HOST delegated to S: scause=8 sepc=0x800136 stvec=0xffffffffc0200dec prior_pc=0x800136
+HOST sret runtime: priv=1 SPP=0 SPIE=1 sepc=0x80013a
+HOST sret completed: priv=0 sepc=0x80013a
+[Thread 0x7ffff50e36c0 (LWP 905) exited]
+[Thread 0x7ffff79656c0 (LWP 904) exited]
+[Inferior 1 (process 901) exited normally]
